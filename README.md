@@ -8,6 +8,8 @@
 
 > 🌐 **Author: Matthias Nordwig** · [programmiere.de](https://programmiere.de)
 
+![pdf-struct-chunker in action](assets/screenshot.png)
+
 ---
 
 ## The Problem
