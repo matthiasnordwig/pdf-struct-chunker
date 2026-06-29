@@ -1,6 +1,6 @@
 # pdf-struct-chunker
 
-[![CI](https://github.com/YOUR_USERNAME/pdf-struct-chunker/actions/workflows/rust.yml/badge.svg)](https://github.com/YOUR_USERNAME/pdf-struct-chunker/actions)
+[![CI](https://github.com/matthiasnordwig/pdf-struct-chunker/actions/workflows/rust.yml/badge.svg)](https://github.com/matthiasnordwig/pdf-struct-chunker/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 
@@ -25,7 +25,7 @@ No LLM needed. No API calls. Runs offline. Written in pure Rust.
 A sample PDF is included — you can try it immediately after cloning:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/pdf-struct-chunker.git
+git clone https://github.com/matthiasnordwig/pdf-struct-chunker.git
 cd pdf-struct-chunker
 cargo run --release -- -i fixtures/sample.pdf --format json --pretty
 ```
@@ -87,7 +87,7 @@ The chunker processes each PDF page by extracting character-level bounding boxes
 
 ### From Source
 ```bash
-git clone https://github.com/YOUR_USERNAME/pdf-struct-chunker.git
+git clone https://github.com/matthiasnordwig/pdf-struct-chunker.git
 cd pdf-struct-chunker
 cargo build --release
 ```
@@ -96,7 +96,7 @@ cargo build --release
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-pdf-struct-chunker = { git = "https://github.com/YOUR_USERNAME/pdf-struct-chunker" }
+pdf-struct-chunker = { git = "https://github.com/matthiasnordwig/pdf-struct-chunker" }
 ```
 
 ---
