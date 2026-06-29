@@ -234,6 +234,13 @@ This removes every line matching "Page 1", "Page 2", etc. from the output.
 | `patterns[].flags` | `"i"` = case-insensitive, `"m"` = multiline | `""` |
 | `patterns[].priority` | Higher value = evaluated first when multiple patterns match the same line | `0` |
 
+## Contact & Feedback
+
+If you have any questions, feature requests, or just want to say hi, feel free to open an issue or reach out via my website:
+
+- 🌐 [programmiere.de](https://programmiere.de)
+- 🐙 [GitHub Issues](https://github.com/matthiasnordwig/pdf-struct-chunker/issues)
+
 ---
 
 ## License
