@@ -122,7 +122,14 @@ for chunk in &chunks {
 
 ## Custom Regex Profiles
 
-Control how the chunker identifies structural elements via JSON profiles:
+Control how the chunker identifies structural elements via JSON profiles. 
+You can create any `.json` file anywhere on your computer (e.g., `my_rules.json`) and pass it to the CLI using the `-p` or `--profile` flag:
+
+```bash
+pdf-struct-chunker -i document.pdf -p my_rules.json
+```
+
+Example JSON structure:
 
 ```json
 {
