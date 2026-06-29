@@ -1,0 +1,21 @@
+[package]
+name = "pdf-struct-chunker"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+authors = ["Matthias Nordwig"]
+description = "LLM-free, layout-aware PDF chunking for RAG pipelines. Pure Rust."
+license = "MIT"
+repository = "https://github.com/YOUR_USERNAME/pdf-struct-chunker"
+homepage = "https://programmiere.de"
+readme = "README.md"
+keywords = ["pdf", "chunking", "rag", "nlp", "rust"]
+categories = ["text-processing", "command-line-utilities"]
+
+[dependencies]
+pdf_oxide = "0.3.60"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }
+thiserror = "1"

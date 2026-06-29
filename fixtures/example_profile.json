@@ -1,0 +1,24 @@
+{
+  "min_chunk_chars": 200,
+  "max_chunk_chars": 1500,
+  "patterns": [
+    {
+      "role": "ignore",
+      "regex": "(?:Seite|Page|Bundesgesetzblatt|Amtsblatt|BAnz)",
+      "flags": "i",
+      "priority": 200
+    },
+    {
+      "role": "heading_l1",
+      "regex": "^((?:Article|Art\\.|§|AT|Kapitel|Abschnitt|TITEL|TITLE|CHAPTER)\\s*[\\d.a-zA-Z]+)\\s*(.*)",
+      "flags": "i",
+      "priority": 100
+    },
+    {
+      "role": "definition",
+      "regex": "\\b(?:means|shall mean|bezeichnet|gilt als|im Sinne)",
+      "flags": "i",
+      "priority": 50
+    }
+  ]
+}
