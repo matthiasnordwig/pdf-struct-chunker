@@ -243,6 +243,12 @@ If you have any questions, feature requests, or just want to say hi, feel free t
 
 ---
 
+## Support the Project
+
+If this tool saved you time and you'd like to support its development, you can [buy me a coffee via PayPal](https://www.paypal.me/MatthiasNordwig). ☕
+
+---
+
 ## License
 
 MIT © Matthias Nordwig
