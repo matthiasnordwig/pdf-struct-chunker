@@ -4,34 +4,33 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 
-A robust, structure- and layout-based PDF chunker for RAG (Retrieval-Augmented Generation) pipelines that operates completely **without LLMs**. Instead, it analyzes PDFs based on X/Y coordinates, font sizes (via `pdf_oxide`), and customizable regex profiles.
-
-Ideal for Edge-AI or offline environments where hardware for large LLMs is not available.
+**Split PDFs into semantically meaningful chunks — without LLMs, without APIs, without cloud dependencies.**
 
 > 🌐 **Author: Matthias Nordwig** · [programmiere.de](https://programmiere.de)
 
-## How it Works
+---
 
-```
-PDF bytes ──► pdf_oxide (X/Y + font extraction)
-                │
-                ▼
-          Line Classification (regex profiles + font heuristics)
-                │
-                ▼
-          Chunk Assembly (heading splits, backward merge, sentence-aware overflow)
-                │
-                ▼
-          Vec<Chunk> { text, metadata: { section, heading, page } }
-```
+## The Problem
 
-The chunker processes each PDF page by extracting character-level bounding boxes, reconstructing lines from Y-coordinates, classifying them using configurable regex patterns (or font-size heuristics as fallback), and assembling them into semantically coherent chunks with structural metadata.
+Most RAG chunkers blindly split documents by token count or character limit. This destroys document structure — headings, sections, and paragraphs get ripped apart. The result: your vector search returns incoherent fragments with no context about where they came from.
 
-## Example Output
+**pdf-struct-chunker** solves this by analyzing the actual *layout* of a PDF: X/Y coordinates, font sizes, and bold detection. It understands where a heading starts, where a paragraph ends, and where a new section begins. Each chunk carries structured metadata (`section`, `heading`, `page`) so your RAG pipeline knows exactly what it's looking at.
+
+No LLM needed. No API calls. Runs offline. Written in pure Rust.
+
+---
+
+## Quick Start
+
+A sample PDF is included — you can try it immediately after cloning:
 
 ```bash
-$ pdf-struct-chunker -i legal_document.pdf --format json --pretty
+git clone https://github.com/YOUR_USERNAME/pdf-struct-chunker.git
+cd pdf-struct-chunker
+cargo run --release -- -i fixtures/sample.pdf --format json --pretty
 ```
+
+Output:
 
 ```json
 [
@@ -39,16 +38,48 @@ $ pdf-struct-chunker -i legal_document.pdf --format json --pretty
     "index": 0,
     "char_start": 0,
     "char_end": 441,
-    "text": "§ 1 Scope of Application\nThis regulation applies to all companies ...",
-    "signature": "§ 1 Scope of Application\nThis regulation applies to all companies",
+    "text": "§ 1 Anwendungsbereich\nDiese Verordnung gilt für alle Unternehmen ...",
+    "signature": "§ 1 Anwendungsbereich\nDiese Verordnung gilt für alle Unternehmen",
     "metadata": {
       "section": "§ 1",
-      "heading": "Scope of Application",
-      "page": 1
+      "heading": "Anwendungsbereich",
+      "page": 2
+    }
+  },
+  {
+    "index": 1,
+    "text": "§ 2 Begriffsbestimmungen\nIm Sinne dieser Verordnung ...",
+    "metadata": {
+      "section": "§ 2",
+      "heading": "Begriffsbestimmungen",
+      "page": 2
     }
   }
 ]
 ```
+
+Every chunk knows its section, heading, and page number — ready for embedding.
+
+---
+
+## How it Works
+
+```
+PDF bytes ──► pdf_oxide (extract characters with X/Y positions + font sizes)
+                │
+                ▼
+          Line Classification
+          (match lines against your regex profiles, or fall back to font-size heuristics)
+                │
+                ▼
+          Chunk Assembly
+          (split at headings, merge small fragments, split overflow at sentence boundaries)
+                │
+                ▼
+          Vec<Chunk> { text, section, heading, page }
+```
+
+The chunker processes each PDF page by extracting character-level bounding boxes, reconstructing lines from Y-coordinates, classifying them using configurable regex patterns (or font-size heuristics as fallback), and assembling them into semantically coherent chunks with structural metadata.
 
 ---
 
@@ -61,7 +92,8 @@ cd pdf-struct-chunker
 cargo build --release
 ```
 
-### As a Dependency
+### As a Dependency in Your Rust Project
+Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
 pdf-struct-chunker = { git = "https://github.com/YOUR_USERNAME/pdf-struct-chunker" }
@@ -78,43 +110,48 @@ pdf-struct-chunker [OPTIONS] --input <INPUT>
 | Flag | Description | Default |
 |------|-------------|---------|
 | `-i, --input <FILE>` | Path to the input PDF file | **Required** |
-| `-p, --profile <FILE>` | Path to a JSON profile configuration | Built-in defaults |
+| `-p, --profile <FILE>` | Path to a JSON profile with custom regex rules (see below) | Built-in defaults |
 | `-o, --output <FILE>` | Output file path | `stdout` |
 | `--format <FORMAT>` | Output format: `jsonl` or `json` | `jsonl` |
 | `--pretty` | Pretty-print JSON output | `false` |
-| `--stats` | Print statistics instead of chunks | `false` |
+| `--stats` | Print chunk statistics instead of the chunks themselves | `false` |
 
 ### Examples
 ```bash
-# JSONL output to file
+# Chunk a PDF and save as JSONL
 pdf-struct-chunker -i document.pdf -o result.jsonl
 
-# Pretty JSON to console
+# Pretty-print JSON to the console
 pdf-struct-chunker -i document.pdf --format json --pretty
 
-# Quick statistics
+# See how many chunks were created and their sizes
 pdf-struct-chunker -i document.pdf --stats
+
+# Use your own regex rules
+pdf-struct-chunker -i document.pdf -p my_rules.json --format json --pretty
 ```
 
 ---
 
-## Library API
+## Library API (In-Memory)
 
-The core function operates entirely in-memory — no file I/O, no temp files:
+The core function operates entirely in-memory — no file I/O, no temp files. Feed it bytes from anywhere (file, HTTP upload, S3, database) and get chunks back instantly:
 
 ```rust
 use pdf_struct_chunker::{chunk_pdf, Profile};
 
-// Bytes can come from anywhere: file, HTTP upload, S3, etc.
-let bytes = std::fs::read("document.pdf").unwrap();
+fn main() {
+    let bytes = std::fs::read("document.pdf").unwrap();
 
-let chunks = chunk_pdf(&bytes, None).unwrap();
-for chunk in &chunks {
-    println!("[{}] {} (p.{})",
-        chunk.metadata.section,
-        chunk.metadata.heading,
-        chunk.metadata.page.unwrap_or(0),
-    );
+    let chunks = chunk_pdf(&bytes, None).unwrap();
+
+    for chunk in &chunks {
+        println!("[{}] {} (p.{})",
+            chunk.metadata.section,
+            chunk.metadata.heading,
+            chunk.metadata.page.unwrap_or(0),
+        );
+    }
 }
 ```
 
@@ -122,14 +159,34 @@ for chunk in &chunks {
 
 ## Custom Regex Profiles
 
-Control how the chunker identifies structural elements via JSON profiles. 
-You can create any `.json` file anywhere on your computer (e.g., `my_rules.json`) and pass it to the CLI using the `-p` or `--profile` flag:
+By default, the chunker uses built-in heuristics optimized for legal and regulatory documents (detecting `§`, `Article`, `Chapter`, etc.). You can override this with your own regex rules.
+
+Create a `.json` file (e.g., `my_rules.json`) and pass it via `--profile`:
 
 ```bash
 pdf-struct-chunker -i document.pdf -p my_rules.json
 ```
 
-Example JSON structure:
+### Simple Example — Ignore Page Numbers
+
+The simplest profile just removes unwanted lines:
+
+```json
+{
+  "patterns": [
+    {
+      "role": "ignore",
+      "regex": "Page \\d+",
+      "flags": "i",
+      "priority": 100
+    }
+  ]
+}
+```
+
+This removes every line matching "Page 1", "Page 2", etc. from the output.
+
+### Full Example — Custom Headings and Definitions
 
 ```json
 {
@@ -160,22 +217,22 @@ Example JSON structure:
 
 ### Pattern Roles
 
-| Role | Behavior |
-|------|----------|
-| `heading_l1` | Forces a new chunk. Capture group 1 → `section`, group 2 → `heading`. |
-| `definition` | Flushes current chunk if it has reached `min_chunk_chars`. |
-| `ignore` | Removes the matching line entirely (e.g., page numbers, footers). |
+| Role | What it does |
+|------|--------------|
+| `heading_l1` | **Starts a new chunk.** Regex capture group 1 becomes `metadata.section` (e.g., "Chapter 3"), group 2 becomes `metadata.heading` (e.g., "Data Protection"). |
+| `definition` | **Triggers a soft split.** If the current chunk has already reached `min_chunk_chars`, the chunker flushes it and starts a new one. |
+| `ignore` | **Removes the line entirely.** Use this for page numbers, footers, headers, or any boilerplate you don't want in your chunks. |
 
 ### Profile Fields
 
 | Field | Description | Default |
 |-------|-------------|---------|
-| `min_chunk_chars` | Minimum chunk size before a "soft" split (definitions, list items) is allowed | `200` |
-| `max_chunk_chars` | Maximum chunk size before a forced split at a sentence boundary | `1500` |
-| `patterns[].regex` | Regular expression to match against each line | — |
+| `min_chunk_chars` | Minimum chunk size before a "soft" split (at definitions or list items) is allowed | `200` |
+| `max_chunk_chars` | Maximum chunk size — forces a split at the nearest sentence boundary | `1500` |
+| `patterns[].regex` | Regular expression matched against each text line | — |
 | `patterns[].role` | One of: `heading_l1`, `definition`, `ignore` | — |
-| `patterns[].flags` | Regex flags: `"i"` = case-insensitive, `"m"` = multiline | `""` |
-| `patterns[].priority` | Higher value = evaluated first when multiple patterns match | `0` |
+| `patterns[].flags` | `"i"` = case-insensitive, `"m"` = multiline | `""` |
+| `patterns[].priority` | Higher value = evaluated first when multiple patterns match the same line | `0` |
 
 ---
 
