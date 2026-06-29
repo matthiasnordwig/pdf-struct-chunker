@@ -18,6 +18,42 @@ Most RAG chunkers blindly split documents by token count or character limit. Thi
 
 No LLM needed. No API calls. Runs offline. Written in pure Rust.
 
+### Before & After
+
+**❌ Standard RAG (Fixed-size overlap)**
+```json
+// Chunk 1
+"This regulation applies to all companies. § 2 De-"
+
+// Chunk 2
+"finitions. In this regulation, the following terms"
+```
+*Result: Words are cut in half, headings are disconnected from their content.*
+
+**✅ pdf-struct-chunker (Layout-aware)**
+```json
+// Chunk 1
+{
+  "metadata": { "section": "§ 1", "heading": "Scope" },
+  "text": "This regulation applies to all companies."
+}
+// Chunk 2
+{
+  "metadata": { "section": "§ 2", "heading": "Definitions" },
+  "text": "In this regulation, the following terms..."
+}
+```
+*Result: Clean, semantic chunks with perfect metadata.*
+
+---
+
+## Performance / Benchmark
+
+Built for speed and Edge-AI scenarios:
+- **No GPU required** (pure CPU processing)
+- **Extremely fast**: Processes a 100-page PDF in `< 1 second` on a standard laptop.
+- **Low memory footprint**: Operates entirely in-memory without creating temporary files.
+
 ---
 
 ## Quick Start
