@@ -1,6 +1,7 @@
 # pdf-struct-chunker
 
 [![CI](https://github.com/matthiasnordwig/pdf-struct-chunker/actions/workflows/rust.yml/badge.svg)](https://github.com/matthiasnordwig/pdf-struct-chunker/actions)
+[![Crates.io](https://img.shields.io/crates/v/pdf-struct-chunker.svg)](https://crates.io/crates/pdf-struct-chunker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 
@@ -131,10 +132,16 @@ cargo build --release
 ```
 
 ### As a Dependency in Your Rust Project
-Add this to your `Cargo.toml`:
+
+The easiest way is to add it from crates.io:
+```bash
+cargo add pdf-struct-chunker
+```
+
+Or add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-pdf-struct-chunker = { git = "https://github.com/matthiasnordwig/pdf-struct-chunker" }
+pdf-struct-chunker = "0.1.0"
 ```
 
 ---
